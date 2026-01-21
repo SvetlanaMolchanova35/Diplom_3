@@ -1,8 +1,8 @@
 import pytest
 import allure
-import time
-from pages.main_page import MainPage
-from pages.order_feed_page import OrderFeedPage
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from helpers.api_client import ApiClient
 
 
@@ -12,111 +12,120 @@ class TestOrderFeed:
     @allure.title("6. Проверка увеличения счетчика 'Выполнено за все время'")
     @pytest.mark.parametrize("browser", ["chrome", "firefox"])
     def test_total_orders_counter_increases(self, authorized_driver, browser, test_user):
-        """Требование 6: при создании нового заказа счётчик 'Выполнено за всё время' увеличивается"""
-        order_feed_page = OrderFeedPage(authorized_driver)
+        driver = authorized_driver
         api_client = ApiClient()
         
-        with allure.step("Открыть ленту заказов"):
-            order_feed_page.open()
-            assert order_feed_page.is_feed_loaded()
+        driver.get("https://stellarburgers.education-services.ru/feed")
+        WebDriverWait(driver, 10).until(
+            EC.url_contains("/feed")
+        )
         
-        with allure.step("Получить начальное значение счетчика"):
-            total_before = order_feed_page.get_total_orders_count()
-            allure.attach(f"Счетчик 'Все время' до: {total_before}", name="Total Before")
+        total_elements = driver.find_elements(By.XPATH, "//*[contains(text(), 'все время') or contains(text(), 'всё время')]/following-sibling::*")
+        assert len(total_elements) > 0, "Элемент счетчика 'Все время' не найден"
         
-        with allure.step("Создать тестовый заказ через API"):
-            api_client.login(test_user["email"], test_user["password"])
-            
-            ingredients = ["61c0c5a71d1f82001bdaaa6d", "61c0c5a71d1f82001bdaaa72"]
-            order_response = api_client.create_order(ingredients)
-            
-            assert order_response.get("success"), f"Не удалось создать заказ: {order_response}"
-            order_number = order_response.get("order", {}).get("number")
-            allure.attach(f"Создан заказ №{order_number}", name="Order Created")
-            
-            time.sleep(3)
+        total_text = total_elements[0].text
+        assert total_text.isdigit(), f"Текст счетчика не является числом: {total_text}"
+        total_before = int(total_text)
         
-        with allure.step("Обновить ленту заказов"):
-            order_feed_page.refresh_feed()
+        allure.attach(f"Счетчик до: {total_before}", name="Total Before")
         
-        with allure.step("Получить значение счетчика после создания заказа"):
-            total_after = order_feed_page.get_total_orders_count()
-            allure.attach(f"Счетчик 'Все время' после: {total_after}", name="Total After")
+        api_client.login(test_user["email"], test_user["password"])
         
-        with allure.step("Проверить что счетчик увеличился"):
-            assert total_after > total_before, f"Счетчик не увеличился: было {total_before}, стало {total_after}"
+        ingredients = ["61c0c5a71d1f82001bdaaa6d", "61c0c5a71d1f82001bdaaa72"]
+        order_response = api_client.create_order(ingredients)
+        
+        assert order_response.get("success"), f"Не удалось создать заказ: {order_response}"
+        order_number = order_response.get("order", {}).get("number")
+        allure.attach(f"Создан заказ №{order_number}", name="Order Created")
+        
+        WebDriverWait(driver, 10).until(
+            lambda d: api_client.get_all_orders().get("total", 0) > 0
+        )
+        
+        driver.refresh()
+        WebDriverWait(driver, 10).until(
+            EC.url_contains("/feed")
+        )
+        
+        total_elements_after = driver.find_elements(By.XPATH, "//*[contains(text(), 'все время') or contains(text(), 'всё время')]/following-sibling::*")
+        assert len(total_elements_after) > 0, "Элемент счетчика 'Все время' не найден после обновления"
+        
+        total_text_after = total_elements_after[0].text
+        assert total_text_after.isdigit(), f"Текст счетчика не является числом: {total_text_after}"
+        total_after = int(total_text_after)
+        
+        allure.attach(f"Счетчик после: {total_after}", name="Total After")
+        
+        assert total_after == total_before + 1, f"Счетчик не увеличился на 1. Было: {total_before}, стало: {total_after}"
     
     @allure.title("7. Проверка увеличения счетчика 'Выполнено за сегодня'")
     @pytest.mark.parametrize("browser", ["chrome", "firefox"])
     def test_today_orders_counter_increases(self, authorized_driver, browser, test_user):
-        """Требование 7: при создании нового заказа счётчик 'Выполнено за сегодня' увеличивается"""
-        order_feed_page = OrderFeedPage(authorized_driver)
+        driver = authorized_driver
         api_client = ApiClient()
         
-        with allure.step("Открыть ленту заказов"):
-            order_feed_page.open()
-            assert order_feed_page.is_feed_loaded()
+        driver.get("https://stellarburgers.education-services.ru/feed")
+        WebDriverWait(driver, 10).until(
+            EC.url_contains("/feed")
+        )
         
-        with allure.step("Получить начальное значение счетчика за сегодня"):
-            today_before = order_feed_page.get_today_orders_count()
-            allure.attach(f"Счетчик 'Сегодня' до: {today_before}", name="Today Before")
+        today_elements = driver.find_elements(By.XPATH, "//*[contains(text(), 'сегодня') or contains(text(), 'Сегодня')]/following-sibling::*")
+        assert len(today_elements) > 0, "Элемент счетчика 'Сегодня' не найден"
         
-        with allure.step("Создать тестовый заказ через API"):
-            api_client.login(test_user["email"], test_user["password"])
-            
-            ingredients = ["61c0c5a71d1f82001bdaaa6d", "61c0c5a71d1f82001bdaaa70"]
-            order_response = api_client.create_order(ingredients)
-            
-            assert order_response.get("success"), f"Не удалось создать заказ: {order_response}"
-            
-            time.sleep(3)
+        today_text = today_elements[0].text
+        assert today_text.isdigit(), f"Текст счетчика не является числом: {today_text}"
+        today_before = int(today_text)
         
-        with allure.step("Обновить ленту заказов"):
-            order_feed_page.refresh_feed()
+        allure.attach(f"Счетчик сегодня до: {today_before}", name="Today Before")
         
-        with allure.step("Получить значение счетчика после создания заказа"):
-            today_after = order_feed_page.get_today_orders_count()
-            allure.attach(f"Счетчик 'Сегодня' после: {today_after}", name="Today After")
+        api_client.login(test_user["email"], test_user["password"])
         
-        with allure.step("Проверить что счетчик увеличился"):
-            assert today_after > today_before, f"Счетчик не увеличился: было {today_before}, стало {today_after}"
+        ingredients = ["61c0c5a71d1f82001bdaaa6d", "61c0c5a71d1f82001bdaaa70"]
+        order_response = api_client.create_order(ingredients)
+        
+        assert order_response.get("success"), f"Не удалось создать заказ: {order_response}"
+        
+        WebDriverWait(driver, 10).until(
+            lambda d: api_client.get_all_orders().get("totalToday", 0) > 0
+        )
+        
+        driver.refresh()
+        WebDriverWait(driver, 10).until(
+            EC.url_contains("/feed")
+        )
+        
+        today_elements_after = driver.find_elements(By.XPATH, "//*[contains(text(), 'сегодня') or contains(text(), 'Сегодня')]/following-sibling::*")
+        assert len(today_elements_after) > 0, "Элемент счетчика 'Сегодня' не найден после обновления"
+        
+        today_text_after = today_elements_after[0].text
+        assert today_text_after.isdigit(), f"Текст счетчика не является числом: {today_text_after}"
+        today_after = int(today_text_after)
+        
+        allure.attach(f"Счетчик сегодня после: {today_after}", name="Today After")
+        
+        assert today_after == today_before + 1, f"Счетчик 'Сегодня' не увеличился на 1. Было: {today_before}, стало: {today_after}"
     
     @allure.title("8. Проверка появления заказа в разделе 'В работе'")
     @pytest.mark.parametrize("browser", ["chrome", "firefox"])
     def test_order_appears_in_progress(self, authorized_driver, browser, test_user):
-        """Требование 8: после оформления заказа его номер появляется в разделе 'В работе'"""
-        main_page = MainPage(authorized_driver)
-        order_feed_page = OrderFeedPage(authorized_driver)
+        driver = authorized_driver
         api_client = ApiClient()
         
-        with allure.step("Создать тестовый заказ через API"):
-            api_client.login(test_user["email"], test_user["password"])
-            
-            ingredients = ["61c0c5a71d1f82001bdaaa6d", "61c0c5a71d1f82001bdaaa72", "61c0c5a71d1f82001bdaaa70"]
-            order_response = api_client.create_order(ingredients)
-            
-            assert order_response.get("success"), f"Не удалось создать заказ: {order_response}"
-            order_number = order_response.get("order", {}).get("number")
-            allure.attach(f"Создан заказ №{order_number}", name="Order Number")
-            
-            time.sleep(3)
+        api_client.login(test_user["email"], test_user["password"])
         
-        with allure.step("Открыть ленту заказов"):
-            order_feed_page.open()
-            assert order_feed_page.is_feed_loaded()
+        ingredients = ["61c0c5a71d1f82001bdaaa6d", "61c0c5a71d1f82001bdaaa72", "61c0c5a71d1f82001bdaaa70"]
+        order_response = api_client.create_order(ingredients)
         
-        with allure.step("Проверить наличие заказов в работе"):
-            in_progress_count = order_feed_page.get_orders_in_progress_count()
-            allure.attach(f"Заказов в работе: {in_progress_count}", name="In Progress Count")
-            
-            if in_progress_count > 0:
-                allure.step("Есть заказы в работе - проверка пройдена")
-                assert True
-            else:
-                total_orders = order_feed_page.get_total_orders_count()
-                today_orders = order_feed_page.get_today_orders_count()
-                
-                allure.attach(f"Всего заказов: {total_orders}", name="Total Orders")
-                allure.attach(f"Заказов сегодня: {today_orders}", name="Today Orders")
-                
-                assert total_orders >= 0 and today_orders >= 0, "Статистика не отображается"
+        assert order_response.get("success"), f"Не удалось создать заказ: {order_response}"
+        order_number = order_response.get("order", {}).get("number")
+        allure.attach(f"Создан заказ №{order_number}", name="Order Number")
+        
+        driver.get("https://stellarburgers.education-services.ru/feed")
+        WebDriverWait(driver, 10).until(
+            EC.url_contains("/feed")
+        )
+        
+        order_elements = driver.find_elements(By.XPATH, f"//*[contains(text(), '{order_number}')]")
+        
+        assert len(order_elements) > 0, f"Заказ №{order_number} не найден в разделе 'В работе'"
+        allure.attach(f"Заказ №{order_number} найден в разделе 'В работе'", name="Order Found")

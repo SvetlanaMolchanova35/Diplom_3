@@ -35,7 +35,9 @@ class BasePage:
     
     @allure.step("Кликнуть по элементу")
     def click_element(self, locator):
-        element = self.find_element(locator)
+        element = WebDriverWait(self.driver, 10).until(
+            EC.element_to_be_clickable(locator)
+        )
         element.click()
     
     @allure.step("Ввести текст '{text}'")
@@ -63,6 +65,12 @@ class BasePage:
     def wait_for_invisibility(self, locator, timeout=10):
         return WebDriverWait(self.driver, timeout).until(
             EC.invisibility_of_element_located(locator)
+        )
+    
+    @allure.step("Ожидать кликабельности элемента")
+    def wait_for_clickable(self, locator, timeout=10):
+        return WebDriverWait(self.driver, timeout).until(
+            EC.element_to_be_clickable(locator)
         )
     
     @allure.step("Проверить, что элемент видим")

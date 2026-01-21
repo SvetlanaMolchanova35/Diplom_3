@@ -2,39 +2,35 @@ from selenium.webdriver.common.by import By
 
 
 class MainPageLocators:
-    # Основные кнопки навигации - простые локаторы
-    CONSTRUCTOR_BUTTON = (By.XPATH, "//a[.//p[text()='Конструктор']]")
-    ORDER_FEED_BUTTON = (By.XPATH, "//a[.//p[text()='Лента Заказов']]")
-    PERSONAL_ACCOUNT_BUTTON = (By.XPATH, "//a[.//p[text()='Личный Кабинет']]")
+    # Основные кнопки навигации
+    CONSTRUCTOR_BUTTON = (By.XPATH, "//a[contains(@class, 'AppHeader_header__link')]/p[text()='Конструктор']")
+    ORDER_FEED_BUTTON = (By.XPATH, "//a[contains(@class, 'AppHeader_header__link')]/p[text()='Лента заказов']")
+    PERSONAL_ACCOUNT_BUTTON = (By.XPATH, "//a[contains(@class, 'AppHeader_header__link')]/p[text()='Личный Кабинет']")
     
-    # Секции конструктора - по тексту
-    BUNS_SECTION = (By.XPATH, "//div[.//span[text()='Булки']]")
-    SAUCES_SECTION = (By.XPATH, "//div[.//span[text()='Соусы']]")
-    FILLINGS_SECTION = (By.XPATH, "//div[.//span[text()='Начинки']]")
+    # Секции конструктора
+    BUNS_SECTION = (By.XPATH, "//span[text()='Булки']/parent::div")
+    SAUCES_SECTION = (By.XPATH, "//span[text()='Соусы']/parent::div")
+    FILLINGS_SECTION = (By.XPATH, "//span[text()='Начинки']/parent::div")
     
-    # Активная секция
-    ACTIVE_SECTION = (By.CSS_SELECTOR, "div[class*='current']")
+    # Ингредиенты
+    INGREDIENT_ITEM = (By.XPATH, "//a[contains(@class, 'BurgerIngredient_ingredient')]")
+    INGREDIENT_COUNTER = (By.XPATH, "//div[contains(@class, 'counter')]")
     
-    # Ингредиенты - простые селекторы
-    ANY_INGREDIENT = (By.CSS_SELECTOR, "a[href*='ingredient'], div[class*='ingredient'], div[class*='Ingredient']")
-    INGREDIENT_IMAGE = (By.CSS_SELECTOR, "img[alt*='ингредиент'], img[src*='ingredient']")
+    # Модальное окно
+    MODAL_OVERLAY = (By.XPATH, "//div[contains(@class, 'Modal_modal_overlay')]")
+    MODAL_CONTENT = (By.XPATH, "//div[contains(@class, 'Modal_modal_content')]")
+    MODAL_CLOSE_BUTTON = (By.XPATH, "//button[contains(@class, 'Modal_modal_close')]")
     
-    # Счетчики
-    INGREDIENT_COUNTER = (By.CSS_SELECTOR, "div[class*='counter']")
+    # Детали ингредиента в модальном окне
+    INGREDIENT_DETAILS_NAME = (By.XPATH, "//div[contains(@class, 'Modal_modal_header')]/h2")
     
     # Конструктор
-    CONSTRUCTOR_AREA = (By.CSS_SELECTOR, "section[class*='constructor'], section[class*='Constructor']")
-    
-    # Кнопка оформления
-    ORDER_BUTTON = (By.XPATH, "//button[contains(text(), 'Оформить') or contains(text(), 'оформить')]")
-    
-    # Модальные окна
-    MODAL = (By.CSS_SELECTOR, "div[class*='modal'], div[class*='Modal']")
-    MODAL_CLOSE = (By.CSS_SELECTOR, "button[class*='close'], svg[class*='close']")
-    
-    # Детали в модальном окне
-    MODAL_TITLE = (By.CSS_SELECTOR, "h2, h3")
-    MODAL_DETAILS = (By.XPATH, "//li[contains(text(), 'калории') or contains(text(), 'Калории')]")
+    CONSTRUCTOR_AREA = (By.XPATH, "//section[contains(@class, 'BurgerConstructor_constructor_list')]")
+    ORDER_BUTTON = (By.XPATH, "//button[contains(text(), 'Оформить заказ')]")
     
     # Заголовок страницы
-    PAGE_TITLE = (By.XPATH, "//h1[contains(text(), 'Соберите') or contains(text(), 'бургер')]")
+    PAGE_TITLE = (By.XPATH, "//h1[text()='Соберите бургер']")
+    
+    # Локаторы для проверки URL
+    CONSTRUCTOR_PAGE = (By.XPATH, "//h1[contains(text(), 'бургер')]")
+    ORDER_FEED_PAGE = (By.XPATH, "//h1[contains(text(), 'Лента заказов')]")

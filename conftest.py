@@ -78,22 +78,35 @@ def test_user(api_client):
 
 @pytest.fixture(scope="function")
 def authorized_driver(driver, test_user):
-    from pages.login_page import LoginPage
-    
+    """Драйвер с авторизованным пользователем"""
     api_client = ApiClient()
-    api_client.login(test_user["email"], test_user["password"])
     
+    # Авторизуемся через API
+    login_response = api_client.login(test_user["email"], test_user["password"])
+    assert login_response, "Не удалось авторизоваться через API"
+    
+    # Получаем токен
+    token = api_client.token
+    assert token, "Токен не получен"
+    
+    # Открываем главную страницу
     driver.get("https://stellarburgers.education-services.ru")
     
-    if api_client.token:
-        driver.add_cookie({
-            'name': 'accessToken',
-            'value': api_client.token.replace('Bearer ', ''),
-            'domain': 'stellarburgers.education-services.ru'
-        })
-        driver.refresh()
+    # Устанавливаем токен в куки
+    driver.add_cookie({
+        'name': 'accessToken',
+        'value': token.replace('Bearer ', ''),
+        'domain': 'stellarburgers.education-services.ru',
+        'path': '/'
+    })
+    
+    # Обновляем страницу для применения куки
+    driver.refresh()
     
     yield driver
+    
+    # Очищаем куки после теста
+    driver.delete_all_cookies()
 
 
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)
