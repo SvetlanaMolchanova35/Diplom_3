@@ -27,7 +27,6 @@ class TestOrderFeed:
         with allure.step("Создать тестовый заказ через API"):
             api_client.login(test_user["email"], test_user["password"])
             
-            # Используем правильные ID ингредиентов
             ingredients = ["61c0c5a71d1f82001bdaaa6d", "61c0c5a71d1f82001bdaaa72"]
             order_response = api_client.create_order(ingredients)
             
@@ -35,7 +34,6 @@ class TestOrderFeed:
             order_number = order_response.get("order", {}).get("number")
             allure.attach(f"Создан заказ №{order_number}", name="Order Created")
             
-            # Ждем обновления статистики
             time.sleep(3)
         
         with allure.step("Обновить ленту заказов"):
@@ -66,12 +64,11 @@ class TestOrderFeed:
         with allure.step("Создать тестовый заказ через API"):
             api_client.login(test_user["email"], test_user["password"])
             
-            ingredients = ["61c0c5a71d1f82001bdaaa6d", "61c0c5a71d1f82001bdaaa70"]  # Булка + мясо
+            ingredients = ["61c0c5a71d1f82001bdaaa6d", "61c0c5a71d1f82001bdaaa70"]
             order_response = api_client.create_order(ingredients)
             
             assert order_response.get("success"), f"Не удалось создать заказ: {order_response}"
             
-            # Ждем обновления статистики
             time.sleep(3)
         
         with allure.step("Обновить ленту заказов"):
@@ -102,7 +99,6 @@ class TestOrderFeed:
             order_number = order_response.get("order", {}).get("number")
             allure.attach(f"Создан заказ №{order_number}", name="Order Number")
             
-            # Ждем обработки заказа
             time.sleep(3)
         
         with allure.step("Открыть ленту заказов"):
@@ -113,18 +109,14 @@ class TestOrderFeed:
             in_progress_count = order_feed_page.get_orders_in_progress_count()
             allure.attach(f"Заказов в работе: {in_progress_count}", name="In Progress Count")
             
-            # Если есть заказы в работе, тест считается пройденным
-            # (на учебном сервере могут быть ограничения)
             if in_progress_count > 0:
                 allure.step("Есть заказы в работе - проверка пройдена")
                 assert True
             else:
-                # Если нет заказов в работе, проверим что вообще есть статистика
                 total_orders = order_feed_page.get_total_orders_count()
                 today_orders = order_feed_page.get_today_orders_count()
                 
                 allure.attach(f"Всего заказов: {total_orders}", name="Total Orders")
                 allure.attach(f"Заказов сегодня: {today_orders}", name="Today Orders")
                 
-                # Проверяем что статистика отображается
                 assert total_orders >= 0 and today_orders >= 0, "Статистика не отображается"

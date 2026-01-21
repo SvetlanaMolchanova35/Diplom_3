@@ -37,7 +37,6 @@ class ApiClient:
                 "access_token": self.token
             }
         else:
-            # Если пользователь уже существует, пробуем авторизоваться
             try:
                 login_data = {"email": email, "password": password}
                 response = requests.post(f"{self.base_url}/auth/login", json=login_data, timeout=10)
@@ -54,7 +53,6 @@ class ApiClient:
             except Exception as e:
                 pass
             
-            # Если не получилось, создаем с другим email
             email = f"test_user_{timestamp}_{random_num}_alt@example.com"
             data["email"] = email
             
@@ -85,7 +83,7 @@ class ApiClient:
                     allure.attach(f"Не удалось удалить пользователя: {response.text}", name="Delete Warning")
             except Exception as e:
                 allure.attach(f"Ошибка при удалении пользователя: {str(e)}", name="Delete Error")
-                pass  # Игнорируем ошибки при удалении
+                pass
     
     @allure.step("Авторизоваться")
     def login(self, email, password):
@@ -114,14 +112,8 @@ class ApiClient:
         elif self.token:
             headers["Authorization"] = self.token
         
-        # Используем правильные ID из полученного списка
-        # ID из вывода get_ingredients.py:
-        # 61c0c5a71d1f82001bdaaa6d - Флюоресцентная булка R2-D3 (bun)
-        # 61c0c5a71d1f82001bdaaa72 - Соус Spicy-X (sauce)
-        # 61c0c5a71d1f82001bdaaa70 - Говяжий метеорит (main)
-        
         if ingredients is None:
-            ingredients = ["61c0c5a71d1f82001bdaaa6d", "61c0c5a71d1f82001bdaaa72"]  # Булка + соус
+            ingredients = ["61c0c5a71d1f82001bdaaa6d", "61c0c5a71d1f82001bdaaa72"]
         
         data = {"ingredients": ingredients}
         
@@ -184,7 +176,6 @@ class ApiClient:
             response = requests.get(f"{self.base_url}/ingredients", timeout=10)
             if response.status_code == 200:
                 data = response.json()
-                # Сохраняем список для возможного использования
                 self.ingredients = data.get("data", [])
                 return data
             return {"success": False, "message": f"Код ответа: {response.status_code}"}

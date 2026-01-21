@@ -7,6 +7,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.firefox.service import Service as FirefoxService
+from webdriver_manager.core.os_manager import ChromeType
 from helpers.api_client import ApiClient
 
 
@@ -26,7 +27,9 @@ def driver(request):
     base_url = request.config.getoption("url")
     
     if browser == "chrome":
-        service = ChromeService(ChromeDriverManager().install())
+        service = ChromeService(
+            ChromeDriverManager(chrome_type=ChromeType.GOOGLE).install()
+        )
         options = Options()
         if headless:
             options.add_argument("--headless")
@@ -53,7 +56,6 @@ def driver(request):
     
     yield driver
     
-    # Закрываем браузер
     try:
         driver.quit()
     except:
@@ -62,34 +64,27 @@ def driver(request):
 
 @pytest.fixture(scope="session")
 def api_client():
-    """Фикстура для работы с API"""
     client = ApiClient()
     yield client
 
 
 @pytest.fixture(scope="function")
 def test_user(api_client):
-    """Фикстура для тестового пользователя"""
     user = api_client.create_test_user()
     yield user
     
-    # Удаляем тестового пользователя после теста
     api_client.delete_test_user()
 
 
 @pytest.fixture(scope="function")
 def authorized_driver(driver, test_user):
-    """Фикстура для авторизованного драйвера"""
     from pages.login_page import LoginPage
     
-    # Авторизуемся через API для надежности
     api_client = ApiClient()
     api_client.login(test_user["email"], test_user["password"])
     
-    # Открываем главную страницу
     driver.get("https://stellarburgers.education-services.ru")
     
-    # Добавляем токен в куки для авторизации
     if api_client.token:
         driver.add_cookie({
             'name': 'accessToken',
@@ -103,7 +98,6 @@ def authorized_driver(driver, test_user):
 
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)
 def pytest_runtest_makereport(item, call):
-    """Хук для создания скриншотов при падении тестов"""
     outcome = yield
     rep = outcome.get_result()
     
@@ -127,7 +121,6 @@ def pytest_runtest_makereport(item, call):
 
 
 def pytest_configure(config):
-    """Конфигурация pytest"""
     config.addinivalue_line("markers", "smoke: smoke tests")
     config.addinivalue_line("markers", "regression: regression tests")
     config.addinivalue_line("markers", "ui: ui tests")

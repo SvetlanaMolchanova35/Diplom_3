@@ -16,7 +16,6 @@ class MainPage(BasePage):
         try:
             self.wait_and_click(MainPageLocators.CONSTRUCTOR_BUTTON, timeout=5)
         except:
-            # Если не нашли кнопку, переходим на главную
             self.driver.get(self.base_url)
         self.wait_for_page_load()
     
@@ -26,7 +25,6 @@ class MainPage(BasePage):
         try:
             self.wait_and_click(MainPageLocators.ORDER_FEED_BUTTON, timeout=5)
         except:
-            # Если не нашли кнопку, переходим по URL
             self.driver.get(f"{self.base_url}/feed")
         self.wait_for_page_load()
     
@@ -41,9 +39,7 @@ class MainPage(BasePage):
     @allure.step("Кликнуть на ингредиент")
     def click_ingredient(self):
         """Кликнуть на любой доступный ингредиент"""
-        # Пробуем разные способы найти ингредиент
         try:
-            # Способ 1: по ссылке
             elements = self.find_elements(MainPageLocators.ANY_INGREDIENT, timeout=3)
             if elements and elements[0].is_displayed():
                 elements[0].click()
@@ -52,7 +48,6 @@ class MainPage(BasePage):
             pass
         
         try:
-            # Способ 2: по изображению
             images = self.driver.find_elements(*MainPageLocators.INGREDIENT_IMAGE)
             if images and images[0].is_displayed():
                 images[0].click()
@@ -60,7 +55,6 @@ class MainPage(BasePage):
         except:
             pass
         
-        # Способ 3: кликнуть в случайное место на странице
         try:
             actions = ActionChains(self.driver)
             actions.move_by_offset(200, 300).click().perform()
@@ -73,16 +67,13 @@ class MainPage(BasePage):
     def get_ingredient_counter(self, ingredient_type="bun"):
         """Получить значение счетчика ингредиента (упрощенная версия)"""
         try:
-            # Переходим к нужной секции
             if ingredient_type == "sauce":
                 self.go_to_sauces_section()
             elif ingredient_type == "filling":
                 self.go_to_fillings_section()
             
-            # Ищем счетчики на странице
             counters = self.find_elements(MainPageLocators.INGREDIENT_COUNTER, timeout=3)
             
-            # Если нашли счетчики, берем первый
             if counters:
                 counter_text = counters[0].text.strip()
                 if counter_text.isdigit():
@@ -95,14 +86,11 @@ class MainPage(BasePage):
     def add_ingredient_to_constructor(self):
         """Добавить ингредиент через клик (без drag and drop)"""
         try:
-            # Кликаем на ингредиент
             self.click_ingredient()
             time.sleep(1)
             
-            # Пробуем найти конструктор
             constructor = self.find_element(MainPageLocators.CONSTRUCTOR_AREA, timeout=3)
             
-            # Кликаем на конструктор
             actions = ActionChains(self.driver)
             actions.click(constructor).perform()
             time.sleep(1)
@@ -122,14 +110,12 @@ class MainPage(BasePage):
     def close_modal(self):
         """Закрыть модальное окно"""
         try:
-            # Пробуем найти кнопку закрытия
             close_buttons = self.driver.find_elements(*MainPageLocators.MODAL_CLOSE)
             if close_buttons and close_buttons[0].is_displayed():
                 close_buttons[0].click()
                 time.sleep(1)
                 return True
             
-            # Если нет кнопки, пробуем кликнуть вне модального окна
             actions = ActionChains(self.driver)
             actions.move_by_offset(10, 10).click().perform()
             time.sleep(1)
@@ -141,11 +127,9 @@ class MainPage(BasePage):
     def is_constructor_loaded(self):
         """Проверить загрузку конструктора"""
         try:
-            # Проверяем по URL
             if self.base_url in self.driver.current_url and "/feed" not in self.driver.current_url:
                 return True
             
-            # Проверяем по заголовку
             titles = self.driver.find_elements(*MainPageLocators.PAGE_TITLE)
             return len(titles) > 0
             
@@ -170,16 +154,14 @@ class MainPage(BasePage):
         except:
             pass
     
-    @allure.step("Получить активную секцию")
+    @allure.step("Получить активную секции")
     def get_active_section(self):
         """Получить текст активной секции"""
         try:
-            # Пробуем найти активную секцию
             active_elements = self.driver.find_elements(*MainPageLocators.ACTIVE_SECTION)
             if active_elements:
                 return active_elements[0].text
             
-            # Если не нашли, ищем по тексту вкладок
             tabs = ["Булки", "Соусы", "Начинки"]
             for tab in tabs:
                 try:
@@ -209,7 +191,7 @@ class MainPage(BasePage):
         """Открыть главную страницу"""
         self.driver.get(self.base_url)
         self.wait_for_page_load()
-        time.sleep(2)  # Даем время на загрузку
+        time.sleep(2)
     
     @allure.step("Проверить что страница загружена")
     def is_page_loaded(self):
