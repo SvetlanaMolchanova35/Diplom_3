@@ -1,0 +1,8 @@
+[32mINFO    [0m WDM:logger.py:11 ====== WebDriver manager ======
+[32mINFO    [0m WDM:logger.py:11 Get LATEST chromedriver version for google-chrome
+[32mINFO    [0m WDM:logger.py:11 Get LATEST chromedriver version for google-chrome
+[32mINFO    [0m WDM:logger.py:11 Driver [C:\Users\mocha\.wdm\drivers\chromedriver\win64\143.0.7499.192\chromedriver-win32/THIRD_PARTY_NOTICES.chromedriver] found in cache
+[32mINFO    [0m WDM:logger.py:11 ====== WebDriver manager ======
+[32mINFO    [0m WDM:logger.py:11 Get LATEST chromedriver version for google-chrome
+[32mINFO    [0m WDM:logger.py:11 Get LATEST chromedriver version for google-chrome
+[32mINFO    [0m WDM:logger.py:11 Driver [C:\Users\mocha\.wdm\drivers\chromedriver\win64\143.0.7499.192\chromedriver-win32/THIRD_PARTY_NOTICES.chromedriver] found in cache
