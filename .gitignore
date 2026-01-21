@@ -41,7 +41,6 @@ MANIFEST
 .settings/
 
 # Allure
-allure-report/
 allure-results/
 *.zip
 test-results/
